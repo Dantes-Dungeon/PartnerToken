@@ -1,39 +1,35 @@
-// this is the background code...
+function copyTextToClipboard(text) {
+	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+	    chrome.tabs.sendMessage(tabs[0].id, 
+		{
+		    message: "copyText",
+		    textToCopy: text 
+		}, function(response) {})
+	});
+}
 
-// listen for our browerAction to be clicked
-chrome.browserAction.onClicked.addListener(function (tab) {
-	// for the current tab, inject the "inject.js" file & execute it
-	var decodeHTML = function (html) {
-		var txt = document.createElement('textarea');
-		txt.innerHTML = html;
-		return txt.value;
-	};
-	var ID;
-	
-	function copyToClipboard(text) {
-		var dummy = document.createElement("textarea");
-		// to avoid breaking orgain page when copying more words
-		// cant copy when adding below this code
-		// dummy.style.display = 'none'
-		document.body.appendChild(dummy);
-		//Be careful if you use texarea. setAttribute('value', value), which works with "input" does not work with "textarea". – Eduard
-		dummy.value = text;
-		dummy.select();
-		document.execCommand("copy");
-		document.body.removeChild(dummy);
-	}
+function alert(text)
+{
+chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+	    chrome.tabs.sendMessage(tabs[0].id, 
+		{
+		    message: "alertText",
+		    textToAlert: text 
+		}, function(response) {})
+	});
+}
 
-    function getCookies(domain, name) 
-    {
-        chrome.cookies.get({"url": domain, "name": name}, function(cookie) {
-            ID = cookie.value;
-            showId();
-        });
-    }
-		
-    function showId() {
-		copyToClipboard(ID);
-        alert("Token copied to clipboard");
-    }
-    getCookies("https://partner.microsoft.com/", ".AspNet.Cookies")        
+
+async function getCookies() {
+        cookie = await chrome.cookies.get({"url": "https://partner.microsoft.com/", "name": ".AspNet.Cookies"} )
+        showId(cookie.value);
+}		
+
+function showId(ID) {
+	copyTextToClipboard(ID);
+	alert("Token copied to clipboard");
+}
+
+chrome.action.onClicked.addListener((tab) => {
+  getCookies();
 });
